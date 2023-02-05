@@ -25,36 +25,41 @@ class Image implements ImageInterface {
         return $this->height;
     }
 
-    /*
-     calculate the aspect ratio of both images(A&B) and determine which dimension (width or height) of imageB needs to be scaled down in order to fit fully within imageA while maintaining the aspect ratio of image.
-    */
-    public function contain(Image $image) {
-        $imageARatio = $this->getWidth() / $this->getHeight();
-        $imageBRatio = $image->getWidth() / $image->getHeight();
-        if ($imageARatio > $imageBRatio) {
-            $newHeight = $this->getHeight();
-            $newWidth = $image->getWidth() * ($newHeight / $image->getHeight());
-        } else {
-            $newWidth = $this->getWidth();
-            $newHeight = $image->getHeight() * ($newWidth / $image->getWidth());
-        }
+    /**
+     * calculate the aspect ratio of both images(A&B) and determine which dimension (width or height) of imageB needs to be scaled down in order to fit fully within imageA while maintaining the aspect ratio of image.
+     * @param  obj  Image $image
+     * @return obj Image of imageB with new width and height.
+     */
+    public function contain(Image $imageB) {
+        $ratios = $this->getWidthAndHeightRatio($this, $imageB);
+        $minRatio = min($ratios['widthRatio'], $ratios['heightRatio']);
+        $newWidth = $imageB->getWidth() * $minRatio;
+        $newHeight = $imageB->getHeight() * $minRatio;
         return new Image($newWidth, $newHeight);
     }
 
-    /*
-    calculate the aspect ratio of both images(A&B) and determine which dimension (width or height) of imageB needs to be scaled up in order to cover as much of imageA as possible while maintaining the aspect ratio.
-    */
-    public function cover(Image $image) {
-        $imageARatio = $this->getWidth() / $this->getHeight();
-        $imageBRatio = $image->getWidth() / $image->getHeight();
-        if ($imageARatio < $imageBRatio) {
-            $newHeight = $this->getHeight();
-            $newWidth = $image->getWidth() * ($newHeight / $image->getHeight());
-        } else {
-            $newWidth = $this->getWidth();
-            $newHeight = $image->getHeight() * ($newWidth / $image->getWidth());
-        }
+    /**
+     * calculate the aspect ratio of both images(A&B) and determine which dimension (width or height) of imageB needs to be scaled up in order to cover as much of imageA as possible while maintaining the aspect ratio.
+     * @param  obj  Image $image
+     * @return obj Image of imageB with new width and height.
+     */
+    public function cover(Image $imageB) {
+        $ratios = $this->getWidthAndHeightRatio($this, $imageB);
+        $maxRatio = max($ratios['widthRatio'], $ratios['heightRatio']);
+        $newWidth = $imageB->getWidth() * $maxRatio;
+        $newHeight = $imageB->getHeight() * $maxRatio;
         return new Image($newWidth, $newHeight);
+    }
+
+    /**
+     * calculate the width & height ratio of image.
+     * @param  obj  $mageA $imageB
+     * @return array ratio values
+     */
+    private function getWidthAndHeightRatio($imageA, $imageB) {
+        $widthRatio = $imageA->getWidth() / $imageB->getWidth();
+        $heightRatio = $imageA->getHeight() / $imageB->getHeight();
+        return ['widthRatio' => $widthRatio, 'heightRatio' => $heightRatio];
     }
 }
 
@@ -67,9 +72,9 @@ $imageB = new Image($imageBInput['width'], $imageBInput['height']);
 
 //get the new dimension for imageB via contain strategy.
 $newImageB = $imageA->contain($imageB);
-echo "Contain: ImageB Width: " . $newImageB->getWidth() . " ImageB Height: " . $newImageB->getHeight();
+echo "Contain: ImageB Width: " . $newImageB->getWidth() . " ImageB Height: " . $newImageB->getHeight(); //W:250 H:45
 //get the new dimension for imageB via cover strategy.
 $newImageB = $imageA->cover($imageB);
-echo "Cover: ImageB Width: " . $newImageB->getWidth() . " ImageB Height: " . $newImageB->getHeight();
+echo "Cover: ImageB Width: " . $newImageB->getWidth() . " ImageB Height: " . $newImageB->getHeight(); // W:277.77 H:500
 
 ?>
